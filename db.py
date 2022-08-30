@@ -10,7 +10,7 @@ con = connector.connect(host=dbconfig['host'], port=dbconfig['port'], user=dbcon
 #cursor for this connection
 cursor = con.cursor()
 
-#table
+#table 
 #create a new table for each user
 #assgn  subject  due  progress  
 def create_table() :
