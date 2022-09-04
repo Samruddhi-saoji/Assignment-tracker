@@ -3,10 +3,11 @@
    #USE assgn_tracker;
 
 import mysql.connector as connector
-from dbconfig import dbconfig  #for connection
+#from dbconfig import dbconfig  #for connection
+    #dbconfig not nedded as i have added p/w to github secrets
 
 #create connection
-con = connector.connect(host=dbconfig['host'], port=dbconfig['port'], user=dbconfig['username'], password=dbconfig['password'], database='pytest')
+con = connector.connect(host='localhost', port='3306', user='root', password=passw, database='assgn_tracker')
 #cursor for this connection
 cursor = con.cursor()
 
