@@ -7,7 +7,7 @@ import mysql.connector as connector
     #dbconfig not nedded as i have added p/w to github secrets
 
 #create connection
-con = connector.connect(host='localhost', port='3306', user='root', password=passw, database='assgn_tracker')
+con = connector.connect(host='localhost', port='3306', user='root', password=secrets.passw, database='assgn_tracker')
 #cursor for this connection
 cursor = con.cursor()
 
