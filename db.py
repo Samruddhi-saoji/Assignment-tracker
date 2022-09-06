@@ -11,20 +11,64 @@ con = connector.connect(host=dbconfig['host'], port=dbconfig['port'], user=dbcon
 #cursor for this connection
 cursor = con.cursor()
 
-#table 
-#create a new table for each user
-#assgn  subject  due  progress  
-def create_table() :
-    #the table to store data abt assignements
-    query = "CREATE TABLE IF NOT EXISTS tbl(assgn VARCHAR(100), subject VARCHAR(80), due DATE , progress VARCHAR(20)) ;"
+##########################################################################################################
+#for log in and authentication
+
+#table = "users"
+#col: email , password
+
+#get dictionary of users
+def getUsers() :
+    dict = {}
+
+    query = 'SELECT * FROM users ;'
     cursor.execute(query)
+
+    #add each entry to the dict
+    for row in cursor :
+        email = row[0]
+        pw = row[1]
+
+        # dict[key] = value
+        dict[email] = pw
+
+    return dict
+
+
+#separate table for each user
+#table name = email address of user
+
+#assgn  subject  due  progress  
+
+#create new table for new user table 
+def create_table( tbl_name) :
+    #the table to store data abt assignements
+    query = "CREATE TABLE IF NOT EXISTS `{}`(assgn VARCHAR(100), subject VARCHAR(80), due DATE , progress VARCHAR(20)) ;".format(tbl_name)
+    cursor.execute(query)
+    con.commit()
+
+
+#add new user
+#add credentials of new user to user table
+def addUser(email, passw) :
+    query = "INSERT INTO users VALUES (%s, %s) ;"
+
+    cursor.execute(query, (email, passw) )
+    con.commit()
+
+
+
+##########################################################################################################
+
+
+
 
 
 
 #functions
 #insert task function
-def add_assgn(assgn , progress , due, subject) :
-    query = "INSERT INTO tbl VALUES (%s, %s , %s , %s) ;"
+def add_assgn(tbl, assgn , progress , due, subject) :
+    query = "INSERT INTO `{}` VALUES (%s, %s , %s , %s) ;".format(tbl)
     # %s = string input
     # date is also being treated as string???
 
@@ -37,21 +81,13 @@ def add_assgn(assgn , progress , due, subject) :
 #so when there are no active assgn of that subject, the subject will be automatically deleted
 
 
-#remove subject entry
-#when assgn is deleted
-def remove_sub_entry(subject) :
-    query = 'DELETE FROM sub_tbl WHERE subject=(%s) ;'
-    cursor.execute(query, (subject))
-    con.commit()
-
-
 
 #getting list of subjects
-def get_sub_list() :
+def get_sub_list(tbl) :
     #list of subjects
     list = ["All"]
 
-    query = 'SELECT DISTINCT subject FROM tbl ;'
+    query = 'SELECT DISTINCT subject FROM `{}` ;'.format(tbl)
     cursor.execute(query)
 
     #now cursor has all the data
@@ -63,8 +99,8 @@ def get_sub_list() :
     return list
 
 
-def display_all() :
-    query = "SELECT * FROM tbl ORDER BY due ASC;"
+def display_all(tbl) :
+    query = "SELECT * FROM `{}` ORDER BY due ASC;".format(tbl)
     cursor.execute(query)
 
     #now cursor has all the tasks
@@ -74,8 +110,8 @@ def display_all() :
     return data
 
 
-def display_subject_tasks( subject ) :
-    query = "SELECT * FROM tbl WHERE subject='{}' ORDER BY due ASC ;".format(subject)
+def display_subject_tasks( tbl, subject ) :
+    query = "SELECT * FROM `{}` WHERE subject='{}' ORDER BY due ASC ;".format(tbl, subject)
 
     cursor.execute(query)
 
@@ -86,11 +122,11 @@ def display_subject_tasks( subject ) :
     return data
 
 
-def get_assignment_list():
+def get_assignment_list(tbl):
     #list of subjects
     list = []
 
-    query = 'SELECT assgn FROM tbl ;'
+    query = 'SELECT assgn FROM `{}` ;'.format(tbl)
     cursor.execute(query)
 
     #now cursor has all the data
@@ -103,32 +139,32 @@ def get_assignment_list():
 
 
 #edit the assignment
-def edit_assgn(old_assgn,  new_progress , new_due) :
-    query = "UPDATE tbl SET due='{}', progress='{}' WHERE assgn='{}' ;".format( new_due, new_progress, old_assgn)
+def edit_assgn(tbl, old_assgn,  new_progress , new_due) :
+    query = "UPDATE `{}` SET due='{}', progress='{}' WHERE assgn='{}' ;".format( tbl, new_due, new_progress, old_assgn)
 
     cursor.execute(query )
     con.commit()
 
 
 #delete assignment
-def delete_assignment(assgn) :
-    query = "DELETE FROM tbl WHERE assgn='{}' ;".format(assgn)
+def delete_assignment(tbl, assgn) :
+    query = "DELETE FROM `{}` WHERE assgn='{}' ;".format(tbl, assgn)
 
     cursor.execute(query )
     con.commit()
 
 
 #delete all assignments
-def clear() :
-    query = "TRUNCATE TABLE tbl ;"
+def clear(tbl) :
+    query = "TRUNCATE TABLE `{}` ;".format(tbl)
 
     cursor.execute(query )
     con.commit()
 
 #pie charts
 #subject
-def subject_data() :
-    query = "SELECT subject, COUNT(*) FROM tbl GROUP BY subject ;"
+def subject_data(tbl) :
+    query = "SELECT subject, COUNT(*) FROM `{}` GROUP BY subject ;".format(tbl)
     cursor.execute(query)
 
     #organise data into 2 lists
@@ -150,8 +186,8 @@ def subject_data() :
 
 
 #subject
-def progress_data() :
-    query = "SELECT progress, COUNT(*) FROM tbl WHERE progress != 'Done' GROUP BY progress ;"
+def progress_data(tbl) :
+    query = "SELECT progress, COUNT(*) FROM `{}` WHERE progress != 'Done' GROUP BY progress ;".format(tbl)
     cursor.execute(query)
 
     #organise data into 2 lists
@@ -170,6 +206,12 @@ def progress_data() :
 
 
     return prog, count
+
+
+
+
+
+
 
 
 

@@ -5,8 +5,16 @@ from matplotlib import pyplot as plt  #for pie charts
 
 
 
-
-def main() :
+#tbl --> name of the table to be used for this user
+def main(tbl_name) :
+    #table name session state
+    if "tbl" not in st.session_state :
+        st.session_state['tbl'] = tbl_name
+    
+    tbl = st.session_state['tbl']
+    #cant directly use tbl_name 
+    #as its value gets initialised to null everytime we interact with a widget
+    
     #beautification
     st.title("Assignment tracker")
 
@@ -16,10 +24,6 @@ def main() :
             use_column_width=True, 
         )
 
-
-
-    #create the table to store our data
-    db.create_table()  #from db.py file
 
     #side bar
     #dropbox
@@ -35,7 +39,7 @@ def main() :
     if choice=="Home" :
         #display assignments
         #create the subject list
-        subject_list = db.get_sub_list()
+        subject_list = db.get_sub_list(tbl)
 
         #variables get re-initialised whenever we interact with a widget
         #so there wont be multiple "All" in the list
@@ -47,7 +51,7 @@ def main() :
         ##########display all###########################
         if display_what == "All" :
             #then display all assignments
-            tasks = db.display_all()
+            tasks = db.display_all(tbl)
 
             #using pandas dataframes to 
             #display the tasks in a tabular format
@@ -59,7 +63,7 @@ def main() :
 
         ############display only 1 subject############
         else :
-            tasks = db.display_subject_tasks(display_what) 
+            tasks = db.display_subject_tasks(tbl, display_what) 
             #display the tasks in a tabular format
             df = pd.DataFrame(tasks, columns=["Assignment", "Subject", "Due date", "Progress"])
             #col headings given
@@ -68,7 +72,7 @@ def main() :
 
         #delete all button
         if st.button("Delete all") :
-            db.clear()
+            db.clear(tbl)
 
 
     ######adding assignment##########################
@@ -89,7 +93,7 @@ def main() :
             if st.form_submit_button("Add") :
                 #add data to table
                     #function from db.py file
-                db.add_assgn(assgn , progress , due, subject)
+                db.add_assgn(tbl ,assgn , progress , due, subject)
                 #success message
                 st.success("Assignment added successfully!")
 
@@ -100,7 +104,7 @@ def main() :
 
         #select the assgn to edit ############################
         #create the assgn list
-        subject_list = db.get_assignment_list()
+        subject_list = db.get_assignment_list(tbl)
         
         #select what assignment to edit
         assgn_to_edit = st.selectbox( "Select assignment to edit", subject_list)
@@ -115,13 +119,13 @@ def main() :
             #"save" button
             if st.form_submit_button('Save changes') :
                 #add update the data in the table
-                db.edit_assgn(assgn_to_edit, new_progress , new_due)
+                db.edit_assgn(tbl, assgn_to_edit, new_progress , new_due)
                 #success message
                 st.success("Assignment updated successfully!")
 
         #delete assignment button ##################################
         if st.button("Delete assignment") :
-            db.delete_assignment(assgn_to_edit)
+            db.delete_assignment(tbl, assgn_to_edit)
             #dont save the changes made
             st.warning("Assignment deleted.")
 
@@ -129,7 +133,7 @@ def main() :
     elif choice=="Stats" :
         #display subjctwise piechart
         st.subheader("Subjectwise share of assignments")
-        tup = db.subject_data()
+        tup = db.subject_data(tbl)
         #tup[0] --> subject list
         #tup[1] --> count list
 
@@ -143,7 +147,7 @@ def main() :
         ###################################################################################
         #display subjctwise piechart
         st.subheader("Progress made on pending assignments")
-        tup = db.progress_data()
+        tup = db.progress_data(tbl)
         #tup[0] --> progress list
         #tup[1] --> count list
 
@@ -157,6 +161,6 @@ def main() :
 
 
       
-main()
+
     
     
